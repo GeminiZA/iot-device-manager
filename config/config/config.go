@@ -20,6 +20,10 @@ type Config struct {
 	SqlitePath   string
 	PostgresDsn  string
 	ApiPort      string
+	MQTTBroker   string
+	MQTTClientId string
+	MQTTUsername string
+	MQTTPassword string
 }
 
 func Load() (*Config, error) {
@@ -52,5 +56,25 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("missing API_PORT in env")
 	}
 	cfg.ApiPort = port
+	mqttBroker := os.Getenv("MQTT_BROKER")
+	if mqttBroker == "" {
+		return nil, fmt.Errorf("missing MQTT_BROKER in env")
+	}
+	cfg.MQTTBroker = mqttBroker
+	mqttClientId := os.Getenv("MQTT_CLIENT_IT")
+	if mqttClientId == "" {
+		return nil, fmt.Errorf("missing MQTT_CLIENT_IT in env")
+	}
+	cfg.MQTTClientId = mqttClientId
+	mqttUsername := os.Getenv("MQTT_USERNAME")
+	if mqttUsername == "" {
+		return nil, fmt.Errorf("missing MQTT_USERNAME in env")
+	}
+	cfg.MQTTUsername = mqttUsername
+	mqttPassword := os.Getenv("MQTT_PASSWORD")
+	if mqttPassword == "" {
+		return nil, fmt.Errorf("missing MQTT_PASSWORD in env")
+	}
+	cfg.MQTTPassword = mqttPassword
 	return &cfg, nil
 }
