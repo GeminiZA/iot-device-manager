@@ -1,0 +1,15 @@
+version: "3.0"
+
+services:
+  mochi-mqtt:
+    image: mochimqtt/server:latest
+    container_name: mochi-mqtt
+    ports:
+      - "1883:1883" # MQTT default port
+      - "8000:8000" # Websocket port
+    environment:
+      - MOCHI_MQTT_LOG_LEVEL=info
+    volumes:
+      - ./mochi-data:/data
+      - ./config.yaml:/config.yaml
+    restart: unless-stopped

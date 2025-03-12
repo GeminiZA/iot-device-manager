@@ -3,13 +3,16 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/GeminiZA/iot-device-manager/config/config"
 	"github.com/GeminiZA/iot-device-manager/config/database"
+	"github.com/GeminiZA/iot-device-manager/controllers/api"
+	"github.com/GeminiZA/iot-device-manager/controllers/mqtt"
 	"github.com/GeminiZA/iot-device-manager/models"
-	"github.com/GeminiZA/iot-device-manager/view/routes"
-	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
+	"github.com/GeminiZA/iot-device-manager/view/mqttHandlers"
 )
 
 func main() {
@@ -17,26 +20,47 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var db *gorm.DB
-	switch cfg.DatabaseType {
-	case config.POSTGRES:
-		// To implement
-	case config.SQLITE:
-		// Building with sqlite so long, implementing postgres should be easy
-		sqliteDb, err := database.ConnectSqlite(cfg.SqlitePath)
-		if err != nil {
-			log.Fatal(err)
-		}
-		db = sqliteDb
+	// Building with sqlite so long, implementing postgres should be easy
+	sqliteDb, err := database.ConnectSqlite(cfg.SqlitePath)
+	if err != nil {
+		log.Fatal(err)
 	}
-	dr := models.NewDeviceRepository(db)
-	app := fiber.New()
-	handler := routes.Handler{
-		Dr: dr,
+	dr := models.NewDeviceRepository(sqliteDb)
+
+	// Start mqtt Client
+	mqttClient, err := mqtt.Connect(mqtt.MQTTConfig{
+		Broker:           fmt.Sprintf("%s:%s", cfg.MQTTBrokerIp, cfg.MQTTBrokerPort),
+		ClientId:         cfg.MQTTClientId,
+		Username:         cfg.MQTTUsername,
+		Password:         cfg.MQTTPassword,
+		UpdatesTopicPath: cfg.MQTTUpdatesTopic,
+		DeviceRepository: dr,
+	})
+	if err != nil {
+		log.Fatal(err)
 	}
-	app.Put("/assets/:id", handler.UpdateDevice)
-	app.Get("/assets/:id", handler.GetDevice)
-	app.Post("/assets", handler.UniqueDeviceIDMiddleware(), handler.CreateDevice)
-	app.Delete("/assets/:id", handler.DeleteDevice)
-	app.Listen(fmt.Sprintf(":%s", cfg.ApiPort))
+	defer mqttClient.Disconnect()
+
+	mqttHandler := mqttHandlers.NewHandler(mqttClient, dr, cfg.MQTTUpdatesTopic)
+	err = mqttHandler.SubscribeDeviceUpdates()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Start http api
+	apiCfg, err := api.NewApiConfig(cfg.ApiPort, dr, mqttHandler)
+	if err != nil {
+		log.Fatal(err)
+	}
+	apiCfg.Listen()
+
+	//Gracefully exit
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	<-sigChan
+
+	apiCfg.Stop()
+	mqttClient.Disconnect()
+	os.Exit(0)
 }

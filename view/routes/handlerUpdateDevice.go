@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func (handler *Handler) UpdateDevice(c *fiber.Ctx) error {
+func (handler *HttpHandler) UpdateDevice(c *fiber.Ctx) error {
 	params := c.AllParams()
 	deviceIdStr, ok := params["id"]
 	if !ok {
@@ -44,7 +44,7 @@ func (handler *Handler) UpdateDevice(c *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
-	err = handler.Dr.UpdateDevice(uint(deviceId), &models.NewDeviceDetails{
+	err = handler.dr.UpdateDevice(uint(deviceId), &models.NewDeviceDetails{
 		Telemetry: telemetry,
 		Status:    request.Status,
 	})
@@ -54,6 +54,16 @@ func (handler *Handler) UpdateDevice(c *fiber.Ctx) error {
 				"error": "not found",
 			})
 		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	err = handler.mqttHandler.PublishDeviceUpdate(&models.Device{
+		ID:        uint(deviceId),
+		Status:    request.Status,
+		Telemetry: request.Telemetry,
+	})
+	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
 		})

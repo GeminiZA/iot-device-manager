@@ -7,7 +7,7 @@ import (
 	"gorm.io/datatypes"
 )
 
-func (handler *Handler) GetDevice(c *fiber.Ctx) error {
+func (handler *HttpHandler) GetDevice(c *fiber.Ctx) error {
 	params := c.AllParams()
 	deviceIdStr, ok := params["id"]
 	if !ok {
@@ -23,7 +23,7 @@ func (handler *Handler) GetDevice(c *fiber.Ctx) error {
 		})
 
 	}
-	device, err := handler.Dr.GetDevice(uint(deviceId))
+	device, err := handler.dr.GetDevice(uint(deviceId))
 	if device == nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": "not found",

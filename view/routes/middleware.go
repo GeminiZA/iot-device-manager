@@ -4,7 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (handler *Handler) UniqueDeviceIDMiddleware() fiber.Handler {
+func (handler *HttpHandler) UniqueDeviceIDMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var request struct {
 			DeviceID uint `json:"id"`
@@ -15,7 +15,7 @@ func (handler *Handler) UniqueDeviceIDMiddleware() fiber.Handler {
 				"error": "Invalid request body",
 			})
 		}
-		_, err = handler.Dr.GetDevice(request.DeviceID)
+		_, err = handler.dr.GetDevice(request.DeviceID)
 		if err == nil {
 			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
 				"error": "id must be unique",

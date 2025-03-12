@@ -3,3 +3,7 @@
 notes
  
 *.db
+
+mochi-mqtt/config.yaml
+iot-device-manager
+main

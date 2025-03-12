@@ -1,0 +1,34 @@
+services:
+  mochi-mqtt:
+    image: mochimqtt/server:latest
+    container_name: mochi-mqtt
+    ports:
+      - "1883:1883" # MQTT default port
+      - "8000:8000" # Websocket port
+    environment:
+      - MOCHI_MQTT_LOG_LEVEL=info
+    volumes:
+      - ./mochi-data:/data
+      - ./mochi-mqtt/config.yaml:/config.yaml
+    networks:
+      - mochi-network
+    restart: unless-stopped
+
+  iot-device-manager:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: iot-device-manager
+    ports:
+      - "8080:8080"
+    environment:
+      - MQTT_BROKER_HOST=mochi-mqtt
+      - MQTT_BROKER_PORT=1883
+    networks:
+      - mochi-network
+    depends_on:
+      - mochi-mqtt
+
+networks:
+  mochi-network:
+    driver: bridge

@@ -9,7 +9,7 @@ import (
 
 type Device struct {
 	ID        uint           `gorm:"primaryKey;not null;index"`
-	Name      string         `gorm:"unique;not null"`
+	Name      string         `gorm:"not null"`
 	Status    string         `gorm:"not null"`
 	CreatedAt time.Time      `gorm:"not null"`
 	UpdatedAt time.Time      `gorm:"not null"`
@@ -71,11 +71,22 @@ func (r *DeviceRepository) UpdateDevice(id uint, details *NewDeviceDetails) erro
 		Status:    details.Status,
 		Telemetry: details.Telemetry,
 	})
+	if res.Error != nil {
+		return res.Error
+	}
 	if res.RowsAffected == 0 {
 		return gorm.ErrRecordNotFound
 	}
+	return nil
+}
+
+func (r *DeviceRepository) UpdateDeviceStatus(id uint, status string) error {
+	res := r.db.Model(&Device{}).Where("id = ?", id).Update("status", status)
 	if res.Error != nil {
 		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
 	}
 	return nil
 }

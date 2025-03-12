@@ -6,7 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (handler *Handler) DeleteDevice(c *fiber.Ctx) error {
+func (handler *HttpHandler) DeleteDevice(c *fiber.Ctx) error {
 	params := c.AllParams()
 	deviceIdStr, ok := params["id"]
 	if !ok {
@@ -21,7 +21,7 @@ func (handler *Handler) DeleteDevice(c *fiber.Ctx) error {
 			"error": "invalid id; must be a number",
 		})
 	}
-	err = handler.Dr.DeleteDevice(uint(deviceId))
+	err = handler.dr.DeleteDevice(uint(deviceId))
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),

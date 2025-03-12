@@ -5,7 +5,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (handler *Handler) CreateDevice(c *fiber.Ctx) error {
+func (handler *HttpHandler) CreateDevice(c *fiber.Ctx) error {
 	var request struct {
 		DeviceName string `json:"name"`
 		DeviceId   uint   `json:"id"`
@@ -17,7 +17,7 @@ func (handler *Handler) CreateDevice(c *fiber.Ctx) error {
 		})
 	}
 	newDevice := models.NewDevice(request.DeviceName, request.DeviceId)
-	err = handler.Dr.CreateDevice(newDevice)
+	err = handler.dr.CreateDevice(newDevice)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
