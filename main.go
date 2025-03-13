@@ -21,7 +21,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// Building with sqlite so long, implementing postgres should be easy
 	sqliteDb, err := database.ConnectSqlite(cfg.SqlitePath)
 	if err != nil {
 		log.Fatal(err)
