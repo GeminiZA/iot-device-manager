@@ -41,6 +41,7 @@ func NewApiConfig(port string, deviceRepository *models.DeviceRepository, mqttHa
 	}
 	cfg.fiberApp.Put("/assets/:id", handler.UpdateDevice)
 	cfg.fiberApp.Get("/assets/:id", handler.GetDevice)
+	cfg.fiberApp.Get("/assets", handler.GetAllDevices)
 	cfg.fiberApp.Post("/assets", handler.CreateDevice)
 	cfg.fiberApp.Delete("/assets/:id", handler.DeleteDevice)
 	return &cfg, nil

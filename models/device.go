@@ -58,6 +58,15 @@ func (r *DeviceRepository) CreateDevice(device *Device) error {
 	return nil
 }
 
+func (r *DeviceRepository) GetAllDevices() (*[]Device, error) {
+	var devices []Device
+	res := r.db.Find(&devices)
+	if err := res.Error; err != nil {
+		return nil, err
+	}
+	return &devices, nil
+}
+
 func (r *DeviceRepository) GetDevice(id uint) (*Device, error) {
 	var device Device
 	err := r.db.First(&device, id).Error
