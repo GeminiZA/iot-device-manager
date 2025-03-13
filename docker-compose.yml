@@ -31,6 +31,7 @@ services:
       - mochi-network
     depends_on:
       - mochi-mqtt
+    restart: unless-stopped
 
 networks:
   mochi-network:
