@@ -13,7 +13,7 @@ func (handler *HttpHandler) GetAllDevices(c *fiber.Ctx) error {
 		})
 	}
 	response := struct {
-		Devices []models.Device
+		Devices []models.Device `json:"devices"`
 	}{
 		Devices: *devices,
 	}
