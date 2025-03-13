@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"gorm.io/datatypes"
@@ -121,8 +122,11 @@ func (r *DeviceRepository) GetAllTelemetryByDeviceID(deviceId uint) ([]Telemetry
 
 func (r *DeviceRepository) GetLatestTelemetryByDeviceID(deviceId uint) (*Telemetry, error) {
 	var telemetry Telemetry
-	res := r.db.Where("device_id = ?", deviceId).Order("timestamp DESC").First(&telemetry)
-	if res.Error != nil {
+	res := r.db.Where("device_id = ?", deviceId).Order("timestamp DESC").Limit(1).Find(&telemetry)
+	if err := res.Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, res.Error
 	}
 	return &telemetry, nil

@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/GeminiZA/iot-device-manager/controllers/timer"
 	"github.com/GeminiZA/iot-device-manager/models"
 	"github.com/GeminiZA/iot-device-manager/view/mqttHandlers"
 	"github.com/GeminiZA/iot-device-manager/view/routes"
@@ -17,9 +18,10 @@ type APIConfig struct {
 	port             string
 	deviceRepository *models.DeviceRepository
 	fiberApp         *fiber.App
+	timer            *timer.Timer
 }
 
-func NewApiConfig(port string, deviceRepository *models.DeviceRepository, mqttHandler *mqttHandlers.MQTTHandler) (*APIConfig, error) {
+func NewApiConfig(port string, deviceRepository *models.DeviceRepository, mqttHandler *mqttHandlers.MQTTHandler, timer *timer.Timer) (*APIConfig, error) {
 	portInt, err := strconv.Atoi(port)
 	if err != nil {
 		return nil, err
@@ -30,12 +32,13 @@ func NewApiConfig(port string, deviceRepository *models.DeviceRepository, mqttHa
 	cfg := APIConfig{
 		port:             port,
 		deviceRepository: deviceRepository,
+		timer:            timer,
 	}
 	cfg.fiberApp = fiber.New(fiber.Config{
 		AppName:     "iot-device-manager",
 		Concurrency: 256 * 1024, // Default
 	})
-	handler, err := routes.NewHandler(deviceRepository, mqttHandler)
+	handler, err := routes.NewHandler(deviceRepository, mqttHandler, timer)
 	if err != nil {
 		return nil, err
 	}

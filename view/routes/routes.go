@@ -3,6 +3,7 @@ package routes
 import (
 	"fmt"
 
+	"github.com/GeminiZA/iot-device-manager/controllers/timer"
 	"github.com/GeminiZA/iot-device-manager/models"
 	"github.com/GeminiZA/iot-device-manager/view/mqttHandlers"
 )
@@ -10,9 +11,10 @@ import (
 type HttpHandler struct {
 	dr          *models.DeviceRepository
 	mqttHandler *mqttHandlers.MQTTHandler
+	timer       *timer.Timer
 }
 
-func NewHandler(dr *models.DeviceRepository, mqttHandler *mqttHandlers.MQTTHandler) (*HttpHandler, error) {
+func NewHandler(dr *models.DeviceRepository, mqttHandler *mqttHandlers.MQTTHandler, timer *timer.Timer) (*HttpHandler, error) {
 	if dr == nil {
 		return nil, fmt.Errorf("missing device repository")
 	}
@@ -22,5 +24,6 @@ func NewHandler(dr *models.DeviceRepository, mqttHandler *mqttHandlers.MQTTHandl
 	return &HttpHandler{
 		dr:          dr,
 		mqttHandler: mqttHandler,
+		timer:       timer,
 	}, nil
 }

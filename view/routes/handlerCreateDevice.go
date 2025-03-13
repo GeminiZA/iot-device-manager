@@ -37,5 +37,6 @@ func (handler *HttpHandler) CreateDevice(c *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
+	handler.timer.AddDevice(newDevice.ID)
 	return c.Status(fiber.StatusCreated).JSON(response)
 }

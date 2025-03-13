@@ -33,5 +33,6 @@ func (handler *HttpHandler) DeleteDevice(c *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
+	handler.timer.RemoveDevice(uint(deviceId))
 	return c.SendStatus(fiber.StatusOK)
 }

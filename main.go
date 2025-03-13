@@ -11,6 +11,7 @@ import (
 	"github.com/GeminiZA/iot-device-manager/config/database"
 	"github.com/GeminiZA/iot-device-manager/controllers/api"
 	"github.com/GeminiZA/iot-device-manager/controllers/mqtt"
+	"github.com/GeminiZA/iot-device-manager/controllers/timer"
 	"github.com/GeminiZA/iot-device-manager/models"
 	"github.com/GeminiZA/iot-device-manager/view/mqttHandlers"
 )
@@ -26,6 +27,14 @@ func main() {
 		log.Fatal(err)
 	}
 	dr := models.NewDeviceRepository(sqliteDb)
+
+	// Start the timeout worker
+	timer := timer.NewTimer(dr)
+	err = timer.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer timer.Stop()
 
 	// Start mqtt Client
 	mqttClient, err := mqtt.Connect(mqtt.MQTTConfig{
@@ -48,7 +57,7 @@ func main() {
 	}
 
 	// Start http api
-	apiCfg, err := api.NewApiConfig(cfg.ApiPort, dr, mqttHandler)
+	apiCfg, err := api.NewApiConfig(cfg.ApiPort, dr, mqttHandler, timer)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -62,5 +71,6 @@ func main() {
 
 	apiCfg.Stop()
 	mqttClient.Disconnect()
+	fmt.Println("Successfully shut down")
 	os.Exit(0)
 }
