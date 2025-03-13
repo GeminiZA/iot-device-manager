@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"fmt"
 	"strconv"
 	"time"
 
@@ -42,7 +41,6 @@ func (handler *HttpHandler) GetDevice(c *fiber.Ctx) error {
 		})
 	}
 	telemetry, err := handler.dr.GetAllTelemetryByDeviceID(uint(deviceId))
-	fmt.Printf("got telemetry from database: %v\n", telemetry)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
