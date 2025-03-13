@@ -1,3 +1,7 @@
+# iot-device-manager
+
+Device manager RESTful API server written for a project. Please see notes at the end
+
 ## Setup
 
 ### Server Setup
@@ -56,7 +60,7 @@ hooks:
 
 ## Devices
 
-Devices are references by `id` which is a `uint` and need to be added to the server by the http endpoint before the server will keep track of it's status and telemetry
+Devices are references by `id` which is a `uint` and need to be added to the server by the http endpoint before the server will keep track of its status and telemetry
 
 ## MQTT
 
@@ -66,9 +70,9 @@ MQTT username and password must match that defined in `mochi-mqtt/config.yaml`
 
 update messages are _json_ and of the following forms:
 
-#### Telemtry
+#### Telemetry
 
-Message publishing telemetry data and the status from the device
+Message publishing telemetry data and status from the device
 
 ```
 {
@@ -90,9 +94,7 @@ Message publishing an update to the device name and status
 
 #### Command
 
-#### Update
-
-Message publishing an update to the device name and status
+Message publishing a command to the device name and status
 
 ```
 {
@@ -100,11 +102,11 @@ Message publishing an update to the device name and status
 }
 ```
 
-only `stop` and `start` commands are currently supported and determines whether the device is publishes it's telemetry data or not
+only `stop` and `start` commands are currently supported and determines whether the device is publishes its telemetry data or not
 
 #### Notes
 
-Status is a string to allow extension on it's functionality
+Status is a string to allow extension on its functionality
 
 Telemetry is a json object to allow any sort of data to stored in it regardless of what device needs to publish
 
@@ -187,3 +189,20 @@ Deletes the device from the database, publishes a `stop` command to the device's
 No Request Body
 
 Returns only a status code
+
+# Notes
+
+I had to make some assumptions with the requirements that necessitated some compromises in the implementation of the project.
+
+- The ID of the device is determined before its registration on the api as middleware to validate a unique id was specified in the requirements. This means that the ID can be non unique when attempting to add it but it is enforced in the database and middleware that it is unique. Therefore any device that needs to be registered but has a non unique ID will not be able to be registered
+- Telemetry can be any data in json form, this is then stored in a timeseries and all parsing will have to be handled by the frontend
+
+No authentication or authorization has been implemented as it was not included in the requirements. This includes the MQTT broker which for now just uses usernames and passwords which need to be set manually and would need to be manually set on each device
+
+The status string for the assets can be changed to display the status of the device if necessary, for now it is just online or offline (if it has not published any updates in the past 30 seconds)
+
+Commands, status updates and telemetry are all published on the same MQTT topic, this is suboptimal and will need to be changed
+
+I have not implemented the embedded integration as I do not currently have access to device that is sufficient for this. Instead I implemented a test application to mock many devices at once, see [mock-iot-device](https://github.com/GeminiZA/mock-iot-device)
+
+I used Next.js for the frontend demonstration of the data with real-time updates as create-next-app has been deprecated. It has not been deployed anywhere yet. It can for now be run locally. See [iot-device-manager](https://github.com/GeminiZA/iot-device-manager)
