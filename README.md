@@ -208,6 +208,6 @@ Commands, status updates and telemetry are all published on the same MQTT topic,
 
 I have not implemented the embedded integration as I do not currently have access to device that is sufficient for this. Instead I implemented a test application to mock many devices at once, see [mock-iot-device](https://github.com/GeminiZA/mock-iot-device)
 
-I used Next.js for the frontend demonstration of the data with real-time updates as create-next-app has been deprecated. It has not been deployed anywhere yet. It can for now be run locally. See [iot-device-manager](https://github.com/GeminiZA/iot-device-manager)
+I used Next.js for the frontend demonstration of the data with real-time updates as create-next-app has been deprecated. It has not been deployed anywhere yet. It can for now be run locally. See [device-dashboard](https://github.com/GeminiZA/device-dashboard)
 
 I used json for the encoding of the MQTT messages to simplify implementation, I would have preferred to use bEncode or define my own encoding schema that would be more space efficient
