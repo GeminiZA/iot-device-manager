@@ -21,6 +21,8 @@ Device manager RESTful API server written for a project. Please see notes at the
   - MQTT_BROKER_PORT
   - MQTT_BROKER_WS_PORT
   - API_PORT
+- Create `config.yaml` in `startMochi/` (see **config.yaml**) below
+- Add users needed for devices and server in the config file
 - run `docker-compose up -d` or `MQTT_BROKER_PORT=1883 MQTT_BROKER_WD_PORT=8000 API_PORT=8080 docker-compose up -d` (defaults) to specify the ports to be used
 - run `docker logs iot-device-manager` to ensure everything is started correctly
 
@@ -60,7 +62,7 @@ hooks:
 
 ## Devices
 
-Devices are references by `id` which is a `uint` and need to be added to the server by the http endpoint before the server will keep track of its status and telemetry
+Devices are references by `id` which is a _uint_ and need to be added to the server by the http endpoint before the server will keep track of its status and telemetry
 
 ## MQTT
 
@@ -196,6 +198,7 @@ I had to make some assumptions with the requirements that necessitated some comp
 
 - The ID of the device is determined before its registration on the api as middleware to validate a unique id was specified in the requirements. This means that the ID can be non unique when attempting to add it but it is enforced in the database and middleware that it is unique. Therefore any device that needs to be registered but has a non unique ID will not be able to be registered
 - Telemetry can be any data in json form, this is then stored in a timeseries and all parsing will have to be handled by the frontend
+- All telemetry data is received via MQTT and the http endpoints are only for changing the details such as the device name and retrieving the data
 
 No authentication or authorization has been implemented as it was not included in the requirements. This includes the MQTT broker which for now just uses usernames and passwords which need to be set manually and would need to be manually set on each device
 
@@ -206,3 +209,5 @@ Commands, status updates and telemetry are all published on the same MQTT topic,
 I have not implemented the embedded integration as I do not currently have access to device that is sufficient for this. Instead I implemented a test application to mock many devices at once, see [mock-iot-device](https://github.com/GeminiZA/mock-iot-device)
 
 I used Next.js for the frontend demonstration of the data with real-time updates as create-next-app has been deprecated. It has not been deployed anywhere yet. It can for now be run locally. See [iot-device-manager](https://github.com/GeminiZA/iot-device-manager)
+
+I used json for the encoding of the MQTT messages to simplify implementation, I would have preferred to use bEncode or define my own encoding schema that would be more space efficient
