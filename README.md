@@ -64,7 +64,7 @@ Devices are references by `id` which is a `uint` and need to be added to the ser
 
 ## MQTT
 
-All assets updates should be published to `assets/:id`
+All assets updates, telemetry and commands are published to `assets/:id`
 
 MQTT username and password must match that defined in `mochi-mqtt/config.yaml`
 
