@@ -26,28 +26,31 @@ func (handler *MQTTHandler) handleUpdateMessage(c mqtt.Client, msg mqtt.Message)
 		log.Errorf("error handling mqtt update message: invalid device id: %s", deviceIDStr)
 		return
 	}
-	var device struct {
+	update := struct {
 		Status    string         `json:"status"`
 		Telemetry datatypes.JSON `json:"telemetry"`
-	}
-	err = json.Unmarshal(msg.Payload(), &device)
+	}{}
+	err = json.Unmarshal(msg.Payload(), &update)
 	if err != nil {
 		log.Errorf("error handling mqtt update message: invalid message payload: %v", err)
 		return
 	}
-	newDeviceDetails := models.NewDeviceDetails{
-		Status:    device.Status,
-		Telemetry: device.Telemetry,
-	}
-	err = handler.dr.UpdateDevice(uint(deviceID), &newDeviceDetails)
+	err = handler.dr.AddTelemetry(uint(deviceID), &update.Telemetry)
 	if err != nil {
 		log.Errorf("error handling mqtt update message: cannot update database: %v", err)
 		return
 	}
-	log.Debugf("Got update from mqtt %v", newDeviceDetails)
+	err = handler.dr.UpdateDevice(uint(deviceID), &models.NewDeviceDetails{
+		Status: update.Status,
+	})
+	if err != nil {
+		log.Errorf("error handling mqtt update message: cannot update database: %v", err)
+		return
+	}
+	log.Debugf("Got update from mqtt %v", update)
 }
 
-func (handler *MQTTHandler) SubscribeDeviceUpdates() error {
+func (handler *MQTTHandler) SubscribeDeviceTelemetry() error {
 	topic := path.Join(handler.updatesTopicPath, "+")
 	fmt.Println(topic)
 	return handler.client.Subscribe(topic, handler.handleUpdateMessage)

@@ -1,13 +1,11 @@
 package routes
 
 import (
-	"encoding/json"
 	"errors"
 	"strconv"
 
 	"github.com/GeminiZA/iot-device-manager/models"
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
@@ -28,8 +26,8 @@ func (handler *HttpHandler) UpdateDevice(c *fiber.Ctx) error {
 	}
 	c.Accepts("application/json")
 	var request struct {
-		Status    string         `json:"status"`
-		Telemetry datatypes.JSON `json:"telemetry"`
+		Status string `json:"status"`
+		Name   string `json:"name"`
 	}
 	err = c.BodyParser(&request)
 	if err != nil {
@@ -37,16 +35,9 @@ func (handler *HttpHandler) UpdateDevice(c *fiber.Ctx) error {
 			"error": "Invalid request body",
 		})
 	}
-	var telemetry datatypes.JSON
-	err = json.Unmarshal([]byte(request.Telemetry), &telemetry)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
 	err = handler.dr.UpdateDevice(uint(deviceId), &models.NewDeviceDetails{
-		Telemetry: telemetry,
-		Status:    request.Status,
+		Status: request.Status,
+		Name:   request.Name,
 	})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -59,9 +50,9 @@ func (handler *HttpHandler) UpdateDevice(c *fiber.Ctx) error {
 		})
 	}
 	err = handler.mqttHandler.PublishDeviceUpdate(&models.Device{
-		ID:        uint(deviceId),
-		Status:    request.Status,
-		Telemetry: request.Telemetry,
+		ID:     uint(deviceId),
+		Status: request.Status,
+		Name:   request.Name,
 	})
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

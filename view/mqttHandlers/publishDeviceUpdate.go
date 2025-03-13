@@ -6,16 +6,15 @@ import (
 	"path"
 
 	"github.com/GeminiZA/iot-device-manager/models"
-	"gorm.io/datatypes"
 )
 
 func (handler *MQTTHandler) PublishDeviceUpdate(device *models.Device) error {
 	retDevice := struct {
-		Status    string         `json:"status"`
-		Telemetry datatypes.JSON `json:"telemetry"`
+		Status string `json:"status"`
+		Name   string `json:"name"`
 	}{
-		Status:    device.Status,
-		Telemetry: device.Telemetry,
+		Status: device.Status,
+		Name:   device.Name,
 	}
 	topic := path.Join(handler.updatesTopicPath, fmt.Sprintf("%d", device.ID))
 	message, err := json.Marshal(retDevice)

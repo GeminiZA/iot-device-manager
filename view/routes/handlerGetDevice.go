@@ -1,11 +1,18 @@
 package routes
 
 import (
+	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/datatypes"
 )
+
+type Telemetry struct {
+	Timestamp time.Time      `json:"timestamp"`
+	Telemetry datatypes.JSON `json:"telemetry"`
+}
 
 func (handler *HttpHandler) GetDevice(c *fiber.Ctx) error {
 	params := c.AllParams()
@@ -34,16 +41,29 @@ func (handler *HttpHandler) GetDevice(c *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
+	telemetry, err := handler.dr.GetAllTelemetryByDeviceID(uint(deviceId))
+	fmt.Printf("got telemetry from database: %v\n", telemetry)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 	response := struct {
-		ID        uint           `json:"id"`
-		Name      string         `json:"name"`
-		Status    string         `json:"status"`
-		Telemetry datatypes.JSON `json:"telemetry"`
+		ID        uint        `json:"id"`
+		Name      string      `json:"name"`
+		Status    string      `json:"status"`
+		Telemetry []Telemetry `json:"telemetry"`
 	}{
 		ID:        device.ID,
 		Name:      device.Name,
 		Status:    device.Status,
-		Telemetry: device.Telemetry,
+		Telemetry: make([]Telemetry, 0, len(telemetry)),
+	}
+	for _, entry := range telemetry {
+		response.Telemetry = append(response.Telemetry, Telemetry{
+			Timestamp: entry.Timestamp,
+			Telemetry: entry.Data,
+		})
 	}
 	return c.Status(fiber.StatusOK).JSON(response)
 }

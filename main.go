@@ -42,7 +42,7 @@ func main() {
 	defer mqttClient.Disconnect()
 
 	mqttHandler := mqttHandlers.NewHandler(mqttClient, dr, cfg.MQTTUpdatesTopic)
-	err = mqttHandler.SubscribeDeviceUpdates()
+	err = mqttHandler.SubscribeDeviceTelemetry()
 	if err != nil {
 		log.Fatal(err)
 	}
