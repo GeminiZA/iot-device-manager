@@ -27,5 +27,11 @@ func (handler *HttpHandler) DeleteDevice(c *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
+	err = handler.mqttHandler.PublishDeviceCommand(uint(deviceId), "stop")
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 	return c.SendStatus(fiber.StatusOK)
 }

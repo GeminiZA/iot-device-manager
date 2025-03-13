@@ -31,5 +31,11 @@ func (handler *HttpHandler) CreateDevice(c *fiber.Ctx) error {
 		Name: newDevice.Name,
 		ID:   newDevice.ID,
 	}
+	err = handler.mqttHandler.PublishDeviceCommand(newDevice.ID, "start")
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 	return c.Status(fiber.StatusCreated).JSON(response)
 }
